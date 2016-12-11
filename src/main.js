@@ -17,7 +17,8 @@ new Vue({
   template: '<App/>',
   components: { App }
 })
-// Vue.filter('searchNote', function (value) {
-//   console.log(value)
-//   // return processed value
-// })
+Vue.filter('searctext', function (value) {
+  console.log(value)
+  return value
+})
+Vue.filter('searctext')

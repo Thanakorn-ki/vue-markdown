@@ -14,12 +14,12 @@
     <button @click="check = false">text</button>
     <button @click="check = true">Markdown</button>
     <!-- <div v-html="compiledMarkdown"></div> -->
-    <div v-for="(item, key, index) in messageMarkDown">
+    <div v-for="(item, index) in filteredItems">
       <div @click="nowIndex = index" style="cursor:pointer;" >
         nameNote: {{item.nameNote}}
       </div>
       <div v-if="index === nowIndex">
-        <textarea v-model="item.contentNote" v-on:keydown.enter="update(key, item.contentNote)"></textarea>
+        <textarea v-model="item.contentNote" v-on:keydown.enter="update(item.key, item.contentNote)"></textarea>
         <div  v-html="test(item.contentNote)"></div>
       </div>
     </div>
@@ -41,16 +41,28 @@ export default {
       searchNote: '',
       nowIndex: null,
       databases: firebase.database().ref('messageMarkDown'),
-      messageMarkDown: ''
+      messageMarkDown: '',
+      dataArray: []
     }
   },
   mounted () {
+    console.log(this)
     var Vm = this
     Vm.databases.limitToLast(40).on('value', function (snapshot) {
       Vm.messageMarkDown = snapshot.val()
+      Object.keys(Vm.messageMarkDown).forEach((item) => {
+        Vm.messageMarkDown[item]['key'] = item
+        Vm.dataArray.push(Vm.messageMarkDown[item])
+      })
     })
   },
   computed: {
+    filteredItems () {
+      var self = this
+      return this.dataArray.filter((item) => {
+        return item.nameNote.indexOf(self.searchNote) > -1
+      })
+    },
     compiledMarkdown: function () {
       if (this.check) {
         return marked(this.msg, {
