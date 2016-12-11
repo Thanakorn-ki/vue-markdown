@@ -17,3 +17,7 @@ new Vue({
   template: '<App/>',
   components: { App }
 })
+// Vue.filter('searchNote', function (value) {
+//   console.log(value)
+//   // return processed value
+// })

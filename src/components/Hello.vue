@@ -1,5 +1,8 @@
 <template>
   <div class="hello">
+    <div>
+      ค้นหา <input v-model="searchNote">
+    </div>
     <div>Create Note</div>
     <div>name Note</div><input v-model="nameNote">
     <div>content</div><textarea v-model="contentNote"></textarea>
@@ -11,12 +14,13 @@
     <button @click="check = false">text</button>
     <button @click="check = true">Markdown</button>
     <!-- <div v-html="compiledMarkdown"></div> -->
-    <div v-for="(item, index) in messageMarkDown">
+    <div v-for="(item, key, index) in messageMarkDown">
       <div @click="nowIndex = index" style="cursor:pointer;" >
         nameNote: {{item.nameNote}}
       </div>
       <div v-if="index === nowIndex">
-           <br> contentNote: {{item.contentNote}} <div v-html="test(item.contentNote)"></div>
+        <textarea v-model="item.contentNote" v-on:keydown.enter="update(key, item.contentNote)"></textarea>
+        <div  v-html="test(item.contentNote)"></div>
       </div>
     </div>
   </div>
@@ -34,6 +38,7 @@ export default {
       contentNote: '',
       check: false,
       msg: '',
+      searchNote: '',
       nowIndex: null,
       databases: firebase.database().ref('messageMarkDown'),
       messageMarkDown: ''
@@ -63,6 +68,9 @@ export default {
     }
   },
   methods: {
+    update (key, text) {
+      this.databases.child(`${key}`).update({contentNote: text})
+    },
     addNote (event, nameNote, contentNote) {
       if (event.shiftKey) {
         contentNote += `\n`
