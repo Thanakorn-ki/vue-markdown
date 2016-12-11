@@ -1,35 +1,78 @@
 <template>
   <div class="hello">
-    <textarea v-model="msg"></textarea>
+    <div>Create Note</div>
+    <div>name Note</div><input v-model="nameNote">
+    <div>content</div><textarea v-model="contentNote"></textarea>
+    <button @click="addNote($event, nameNote, contentNote)">addNote</button>
+    <!-- <input v-model=""> -->
+    <!-- 1 -->
     <!-- <div v-html="toMarkDown(msg)"></div> -->
-    <div v-html="compiledMarkdown"></div>
+    <!-- 2 -->
+    <button @click="check = false">text</button>
+    <button @click="check = true">Markdown</button>
+    <!-- <div v-html="compiledMarkdown"></div> -->
+    <div v-for="(item, index) in messageMarkDown">
+      <div @click="nowIndex = index" style="cursor:pointer;" >
+        nameNote: {{item.nameNote}}
+      </div>
+      <div v-if="index === nowIndex">
+           <br> contentNote: {{item.contentNote}} <div v-html="test(item.contentNote)"></div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 /* globals marked */
 require('highlight.js/styles/mono-blue.css')
+import * as firebase from 'firebase'
 export default {
   name: 'hello',
   data () {
     return {
-      msg: 'Welcome to Your Vue.js App'
+      nameNote: '',
+      contentNote: '',
+      check: false,
+      msg: '',
+      nowIndex: null,
+      databases: firebase.database().ref('messageMarkDown'),
+      messageMarkDown: ''
     }
+  },
+  mounted () {
+    var Vm = this
+    Vm.databases.limitToLast(40).on('value', function (snapshot) {
+      Vm.messageMarkDown = snapshot.val()
+    })
   },
   computed: {
     compiledMarkdown: function () {
-      return marked(this.msg, {
-        gfm: true,
-        tables: true,
-        breaks: true,
-        pedantic: true,
-        sanitize: true,
-        smartLists: true,
-        smartypants: true
-      })
+      if (this.check) {
+        return marked(this.msg, {
+          gfm: true,
+          tables: true,
+          breaks: true,
+          pedantic: true,
+          sanitize: true,
+          smartLists: true,
+          smartypants: true
+        })
+      } else {
+        return this.msg
+      }
     }
   },
   methods: {
+    addNote (event, nameNote, contentNote) {
+      if (event.shiftKey) {
+        contentNote += `\n`
+      }
+      if (nameNote.trim() !== '' && contentNote.trim() !== '' && !event.shiftKey) {
+        event.preventDefault()
+        let preInsert = { nameNote: nameNote, contentNote: contentNote }
+        this.databases.push(preInsert)
+      }
+    },
     toMarkDown (value) {
       return marked(value, {
         renderer: new marked.Renderer(),
@@ -44,6 +87,21 @@ export default {
           return require('highlight.js').highlightAuto(code).value
         }
       })
+    },
+    test (text) {
+      if (this.check) {
+        return marked(text, {
+          gfm: true,
+          tables: true,
+          breaks: true,
+          pedantic: true,
+          sanitize: true,
+          smartLists: true,
+          smartypants: true
+        })
+      } else {
+        return text
+      }
     }
   }
 }
